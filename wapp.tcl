@@ -18,13 +18,36 @@
 #
 package require Tcl 8.6
 
+set WAPP_LOGLEVELS { alert error warn info verbose debug }
+proc wapp-log-level-lookup { level } {
+    return [lsearch $::WAPP_LOGLEVELS $level]
+}
+
+set WAPP_LOG_APPNAME [file rootname [file tail $::argv0]]
+set WAPP_LOGLEVEL info
+set WAPP_LOGLEVEL_VALUE [wapp-log-level-lookup $::WAPP_LOGLEVEL]
+
+proc wapp-log-level { args } {
+    set ::WAPP_LOGLEVEL {*}$args
+}
+proc wapp-log-line { line } {
+    puts stderr $line
+}
+proc wapp-log { level msg } {
+    set value [wapp-log-level-lookup $level]
+
+    if { $::WAPP_LOGLEVEL_VALUE >= $value } {
+	wapp-log-line "[clock format [clock seconds]] $level $msg"
+    }
+}
+
 proc wappInt-cookies-parse {cstr} {
   set c [dict create]
 
   while {$cstr ne ""} {
     set idxs [regexp -indices -inline {^\s*([^\s=]+)\s*=\s*(?:"([^"]*)"|([^";][^;]*)|)(?:\s*;\s*)?} $cstr]
     if {[llength $idxs] == 0} {
-      puts stderr "cookie parse error for: '$cstr'"
+      wapp-log errro "cookie parse error for: '$cstr'"
       return $c
     }
     set name [string range $cstr [lindex $idxs 1 0] [lindex $idxs 1 1]]
@@ -447,9 +470,9 @@ proc wappInt-start-listener {laddr wappmode fromip} {
   if {$wappmode=="local"} {
     wappInt-start-browser http://$host:$port/
   } elseif {$fromip!=""} {
-    puts "Listening for $type requests on $host:$port from IP $fromip"
+    wapp-log info "Listening for $type requests on $host:$port from IP $fromip"
   } else {
-    puts "Listening for $type requests on $host:$port"
+    wapp-log info "Listening for $type requests on $host:$port"
   }
 }
 
@@ -501,7 +524,8 @@ proc wappInt-close-channel {chan} {
 #
 proc wappInt-http-readable {chan} {
   if {[catch [list wappInt-http-readable-unsafe $chan] msg]} {
-    puts stderr "$msg\n$::errorInfo"
+    wapp-log error $msg
+    wapp-log debug $::errorInfo
     wappInt-close-channel $chan
   }
 }
@@ -774,7 +798,7 @@ proc wappInt-handle-request-unsafe {chan} {
     }
   } msg]} {
     if {[wapp-param WAPP_MODE]=="local" || [wapp-param WAPP_MODE]=="server"} {
-      puts "ERROR: $::errorInfo"
+      wapp-log error $::errorInfo"
     }
     wapp-reset
     wapp-reply-code "500 Internal Server Error"
@@ -890,7 +914,8 @@ proc wappInt-handle-cgi-request {} {
 #
 proc wappInt-scgi-readable {chan} {
   if {[catch [list wappInt-scgi-readable-unsafe $chan] msg]} {
-    puts stderr "$msg\n$::errorInfo"
+    wapp-log error $msg
+    wapp-log debug $::errorInfo
     wappInt-close-channel $chan
   }
 }
