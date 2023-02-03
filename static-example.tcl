@@ -2,7 +2,7 @@
 #
 set root [file dirname [file normalize [info script]]]
 
-source ../wapp.tcl
+source wapp.tcl
 source wapp-static.tcl
 
 wapp-static ../../tickpic/images images browse

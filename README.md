@@ -5,11 +5,6 @@
  deliberate security of wapp, but some care was taken.  Feedback regarding
  security welcome.
 
-#### thread
- Refactor file delivery to allow the file content to be deivered by a new
- thread.  One for each file.  This makes the service about 30% faster when
- displaying a page full of large jpegs.
-
 #### routes
  Boiler plate generator for unpacking route path values and wapp-params into
  local variables in a page handler.
