@@ -27,8 +27,9 @@ set WAPP_LOG_APPNAME [file rootname [file tail $::argv0]]
 set WAPP_LOGLEVEL info
 set WAPP_LOGLEVEL_VALUE [wapp-log-level-lookup $::WAPP_LOGLEVEL]
 
-proc wapp-log-level { args } {
-    set ::WAPP_LOGLEVEL {*}$args
+proc wapp-log-level { level } {
+    set ::WAPP_LOGLEVEL $level
+    set ::WAPP_LOGLEVEL_VALUE [wapp-log-level-lookup $::WAPP_LOGLEVEL]
 }
 proc wapp-log-line { line } {
     puts stderr $line
@@ -47,7 +48,7 @@ proc wappInt-cookies-parse {cstr} {
   while {$cstr ne ""} {
     set idxs [regexp -indices -inline {^\s*([^\s=]+)\s*=\s*(?:"([^"]*)"|([^";][^;]*)|)(?:\s*;\s*)?} $cstr]
     if {[llength $idxs] == 0} {
-      wapp-log errro "cookie parse error for: '$cstr'"
+      wapp-log error "cookie parse error for: '$cstr'"
       return $c
     }
     set name [string range $cstr [lindex $idxs 1 0] [lindex $idxs 1 1]]
