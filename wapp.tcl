@@ -262,18 +262,19 @@ proc wapp-reply-code {x} {
 
 # Set a cookie
 #
-proc wapp-set-cookie {name value} {
+proc wapp-set-cookie {name value { maxage Session } } {
   global wapp
   if {![regexp {^[]!#$%&'()*+./:0-9<=>?@A-Z[^_`a-z{|}~-]+$} $value]} {
     error "Bad cookie value: '$value'"
   }
-  dict lappend wapp .new-cookies $name $value
+  dict lappend wapp .new-cookies $name $value $maxage
 }
 
 # Unset a cookie
 #
 proc wapp-clear-cookie {name} {
-  wapp-set-cookie $name {}
+  global wapp
+  dict lappend wapp .new-cookies $name "" Session
 }
 
 # Add extra entries to the reply header
@@ -829,13 +830,16 @@ proc wappInt-handle-request-unsafe {chan} {
     puts $chan "Content-Security-Policy: [dict get $wapp .csp]\r"
   }
   if {[dict exists $wapp .new-cookies]} {
-    foreach {nm val} [dict get $wapp .new-cookies] {
+    foreach {nm val age} [dict get $wapp .new-cookies] {
       if {[regexp {^[a-z][-a-z0-9_]*$} $nm]} {
         if {$val==""} {
           puts $chan "Set-Cookie: $nm=; HttpOnly; Path=/; Max-Age=1\r"
         } else {
+          if { $age ne "Session" } {
+            set maxage "; Max-Age=$age"
+          }
           set val $val
-          puts $chan "Set-Cookie: $nm=$val; HttpOnly; Path=/\r"
+          puts $chan "Set-Cookie: $nm=$val; HttpOnly; Path=/$maxage\r"
         }
       }
     }
