@@ -24,8 +24,11 @@ proc wapp-route { method pathspec args } {
     if { [llength $names] } {
         append prefix "    set PATH_TAIL \[lassign \[split \[wapp-param PATH_TAIL] /] $names]\n"
     }
-    foreach arg $args {
-        append prefix "    set $arg \[wapp-param $arg]\n"
+    if { [llength $args] } {
+        append  prefix "wapp-allow-xorigin-params\n"
+        foreach arg $args {
+            append prefix "    set $arg \[wapp-param $arg]\n"
+        }
     }
 
     proc wapp-page-$page-$method {} "\n$prefix $body"
