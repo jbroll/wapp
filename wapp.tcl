@@ -426,13 +426,13 @@ proc wappInt-trace {} {}
 #    laddr           Listen on this addr (tcp!ADDR!PORT).  Port 0 means to select
 #                    a port that is not currently in use
 #
-#    wappmode        One of "scgi", "remote-scgi", "server", or "local".
+#    wappmode        One of "scgi", "server", or "local".
 #
 #    fromip          If not {}, then reject all requests from IP addresses
 #                    other than $fromip
 #
 proc wappInt-start-listener {laddr wappmode fromip} {
-  if {[string match *scgi $wappmode]} {
+  if {[string eq scgi $wappmode]} {
     set type SCGI
     set server [list wappInt-new-connection \
                 wappInt-scgi-readable $wappmode $fromip]
@@ -975,8 +975,6 @@ proc wappInt-scgi-readable-unsafe {chan} {
 #
 #    -scgi $PORT           Listen for SCGI requests on 127.0.0.1:$PORT
 #
-#    -remote-scgi $PORT    Listen for SCGI requests on TCP port $PORT
-#
 #    -cgi                  Handle a single CGI request
 #
 # With no arguments, the behavior is called "auto".  In "auto" mode,
@@ -1029,11 +1027,6 @@ proc wapp-start {arglist} {
         incr i;
         set mode "scgi"
         set fromip 127.0.0.1
-        set laddr "tcp!127.0.0.1![lindex $arglist $i]"
-      }
-      -remote-scgi {
-        incr i;
-        set mode "remote-scgi"
         set laddr "tcp!127.0.0.1![lindex $arglist $i]"
       }
       -cgi {
