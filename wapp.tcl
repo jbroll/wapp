@@ -441,34 +441,25 @@ proc wappInt-start-listener {laddr wappmode fromip} {
     set server [list wappInt-new-connection \
                 wappInt-http-readable $wappmode $fromip]
   }
-  set laddr [split $laddr "!"]
+  set laddr [split $laddr :]
   switch [llength $laddr] {
-  3 {
-    if {[lindex $laddr 0] ne "tcp"} {
-      error "Listen error: only 'tcp' network is supported now"
-    }
-    set host [lindex $laddr 1]
-    set port [lindex $laddr 2]
+      2 {
+        set host [lindex $laddr 0]
+        set port [lindex $laddr 1]
+      }
+      1 {
+        set host localhost
+        set port [lindex $laddr 0]
+      }
+      default {
+        set host localhost
+        set port 80
+      }
   }
-  2 {
-    if {[lindex $laddr 0] ne "tcp"} {
-      error "Listen error: only 'tcp' network is supported now"
-    }
-    set host [lindex $laddr 1]
-    set port 0
-  }
-  default {
-    set host [lindex $laddr 0]
-    set port 0
-  }
-  }
-  if {$wappmode=="local" || $wappmode=="scgi"} {
-    set x [socket -server $server -myaddr $host $port]
-  } else {
-    set x [socket -server $server -myaddr $host $port]
-  }
-  set coninfo [chan configure $x -sockname]
+  set sock [socket -server $server -myaddr $host $port]
+  set coninfo [chan configure $sock -sockname]
   set port [lindex $coninfo 2]
+
   if {$wappmode=="local"} {
     wappInt-start-browser http://$host:$port/
   } elseif {$fromip!=""} {
@@ -1004,7 +995,7 @@ proc wappInt-scgi-readable-unsafe {chan} {
 proc wapp-start {arglist} {
   global env
   set mode auto
-  set laddr "tcp!127.0.0.1!0"
+  set laddr "127.0.0.1:80"
   set nowait 0
   set fromip {}
   set n [llength $arglist]
