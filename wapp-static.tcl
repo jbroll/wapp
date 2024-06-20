@@ -4,6 +4,7 @@
 set wapp-static-mimetypes {
     .css    text/css
     .html   text/html
+    .ico    image/x-icon
     .jpeg   image/jpeg
     .jpg    image/jpeg
     .js     application/javascript
