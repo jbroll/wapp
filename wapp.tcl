@@ -850,7 +850,7 @@ proc wapp-write-content { wapp chan } {
       set contentLength [file size $filepath]
       set inchan [open $filepath rb]
   } else {
-      if {[string match text/* $mimetype]} {
+      if {[string match text/* $mimetype] || $mimetype eq "application/json" } {
         set reply [encoding convertto utf-8 [dict get $wapp .reply]]
         if {[regexp {\ygzip\y} [wapp-param HTTP_ACCEPT_ENCODING]]} {
           catch {
