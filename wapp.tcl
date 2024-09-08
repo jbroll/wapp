@@ -824,13 +824,15 @@ proc wappInt-handle-request-unsafe {chan} {
     foreach {nm val age} [dict get $wapp .new-cookies] {
       if {[regexp {^[a-z][-a-z0-9_]*$} $nm]} {
         if {$val==""} {
-          puts $chan "Set-Cookie: $nm=; HttpOnly; Path=/; Max-Age=1\r"
+          puts $chan "Set-Cookie: $nm=; HttpOnly; Path=/; Max-Age=1; SameSite=Lax;\r"
         } else {
           if { $age ne "Session" } {
-            set maxage "; Max-Age=$age"
+            set maxage "Max-Age=$age;"
+          } else {
+            set maxage ""
           }
           set val $val
-          puts $chan "Set-Cookie: $nm=$val; HttpOnly; Path=/$maxage\r"
+          puts $chan "Set-Cookie: $nm=$val; HttpOnly; Path=/; $maxage SameSite=Lax;\r"
         }
       }
     }
