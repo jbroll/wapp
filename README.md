@@ -9,6 +9,15 @@
  Boiler plate generator for unpacking route path values and wapp-params into
  local variables in a page handler.
 
+ Dispatch runs two override-able hooks (both have no-op defaults, so existing
+ apps are unaffected):
+ - `wapp-route-filter {page}` — pre-dispatch hook for auth / CORS pre-flight.
+   Return 0 to stop (it handled the reply), 1 to continue. Default: continue.
+ - `wapp-route-notfound {page}` — replaces the default plain-text 404 (e.g. to
+   emit a JSON error body). Default: `404 Page Not Found`.
+
+ See `routes-example.tcl`.
+
 #### From [lego12239/wapp](https://github.com/lego12239/wapp)
 
 This is a fork of original wapp from D. Richard Hipp with some changes:

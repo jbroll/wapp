@@ -7,12 +7,17 @@
 # still available using [wapp-param PATH_TAIL].  Additional parameters are
 # unpacked with [wapp-param] into local variables.
 #
+# Override-able dispatch hooks (defaults below). See README.
+proc wapp-route-filter   { page } { return 1 }
+proc wapp-route-notfound { page } { wapp-reply-code "404 Page Not Found" }
+
 proc wapp-route-dispatch { page } {
+    if { ![wapp-route-filter $page] } return
     set REQUEST_METHOD [wapp-param REQUEST_METHOD]
     if { [info command wapp-page-$page-$REQUEST_METHOD] ne "" } {
         wapp-page-$page-$REQUEST_METHOD
     } else {
-        wapp-reply-code "404 Page Not Found"
+        wapp-route-notfound $page
     }
 }
 

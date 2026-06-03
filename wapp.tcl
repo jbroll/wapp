@@ -16,7 +16,7 @@
 #
 #   (2)  Indentifiers intended for internal use only begin with "wappInt"
 #
-package require Tcl 8.6
+package require Tcl 8.6-
 
 set WAPP_LOGLEVELS { alert error warn info verbose debug }
 proc wapp-log-level-lookup { level } {
@@ -441,6 +441,12 @@ proc wappInt-start-listener {laddr wappmode fromip} {
     set server [list wappInt-new-connection \
                 wappInt-http-readable $wappmode $fromip]
   }
+  # Handle both tcp!ADDR!PORT and ADDR:PORT formats
+  if {[string match "tcp!*" $laddr]} {
+    set parts [split $laddr !]
+    set host [lindex $parts 1]
+    set port [lindex $parts 2]
+  } else {
   set laddr [split $laddr :]
   switch [llength $laddr] {
       2 {
@@ -455,6 +461,7 @@ proc wappInt-start-listener {laddr wappmode fromip} {
         set host localhost
         set port 80
       }
+  }
   }
   set sock [socket -server $server -myaddr $host $port]
   set coninfo [chan configure $sock -sockname]
@@ -590,7 +597,7 @@ proc wappInt-parse-header {chan} {
   if {$hdr==""} {return 1}
   set req [lindex $hdr 0]
   dict set W REQUEST_METHOD [set method [lindex $req 0]]
-  if {[lsearch -exact {GET HEAD POST PUT PATCH DELETE} $method]<0} {
+  if {[lsearch -exact {GET HEAD POST PUT PATCH DELETE OPTIONS} $method]<0} {
     error "unsupported request method: \"[dict get $W REQUEST_METHOD]\""
   }
   set uri [lindex $req 1]
